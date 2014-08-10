@@ -70,7 +70,7 @@ static void digitize(
     }
 }
 
-static emit(
+static void emit(
     dec64_string_state state,
     int c
 ) {
@@ -135,7 +135,7 @@ static void emit_end(dec64_string_state state) {
     }
 }
 
-static emit_exponent(
+static void emit_exponent(
     dec64_string_state state,
     int64 exponent
 ) {
@@ -158,7 +158,7 @@ static emit_exponent(
     }
 }
 
-static emit_separator(
+static void emit_separator(
     dec64_string_state state
 ) {
     emit(state, state->separator);
