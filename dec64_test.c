@@ -1189,7 +1189,7 @@ static int do_tests(int level_of_detail) {
     test_all_signum();
     test_all_subtract();
 
-    printf("\n\n%lli pass, %lli fail.\n", nr_pass, nr_fail);
+    printf("\n\n%i pass, %i fail.\n", nr_pass, nr_fail);
     return nr_fail;
 }
 
