@@ -1,0 +1,6 @@
+*.o
+*.obj
+*.exe
+dec64_string_test
+dec64_test
+
