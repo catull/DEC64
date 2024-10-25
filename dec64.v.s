@@ -1,21 +1,21 @@
-; dec64.s
-; 2024-04-09
+; dec64.v
+; 2022-09-08
 ; Public Domain
 
 ; No warranty expressed or implied. Use at your own risk. You have been warned.
 
 
-; This file contains the source assembly code for the ARM64 implementation of
+; This file contains the source assembly code for the RISC-V 64M implementation of
 ; the DEC64 library, being the elementary arithmetic operations for DEC64, a
 ; decimal floating point type.
 ;
-; This file has been tested with Visual Studio 19.
+; This file has not been tested with Visual Studio 19.
 
 ; DEC64 uses 64 bits to represent a number. The low order 8 bits contain an
 ; exponent that ranges from -127 thru 127. The exponent is not biased. The
 ; exponent -128 is reserved for nan (not a number). The remaining 56 bits,
 ; including the sign bit, are the coefficient in the range
-; -36_028_797_018_963_968 thru 36_028_797_018_963_967. The exponent and the
+; -36_028_797_018_963_968_thru_36_028_797_018_963_967. The exponent and the
 ; coefficient are both twos complement signed numbers.
 ;
 ; The value of any non-nan DEC64 number is coefficient * (10 ** exponent).
@@ -143,11 +143,35 @@
 
 
 ; All of the public functions in this file accept up to two arguments,
-; which are passed in registers (x0, x1), returning a result in x0.
+; which are passed in registers (x10, x11), returning a result in x10.
 
-; Registers x0 thru x15 may be clobbered.
-; The other registers are not disturbed.
-; The stack is not touched in any way.
+; Register aliases:
+
+; The RISC-V ABI scatters the usable registers. To simplify, we give the
+; registers v aliases: v0 thru v14. Register v0 receives the first argument
+; and returns the result. Register v1 receives the second argument. The other
+; v registers are temporary variables.
+
+; All of the v registers may be clobbered. The other registers are not
+; disturbed. The stack is not touched in any way.
+
+v0:     equ     x10
+v1:     equ     x11
+v2:     equ     x12
+v3:     equ     x13
+v4:     equ     x14
+v5:     equ     x15
+v6:     equ     x16
+v7:     equ     x17
+v8:     equ     x28
+v9:     equ     x29
+v10:    equ     x30
+v11:    equ     x31
+v12:    equ     x5
+v13:    equ     x6
+v14:    equ     x7
+zero:   equ     x0
+
 
     area dec64, align=8, code, readonly
 
@@ -1018,7 +1042,8 @@ return
 
 return_null
 
-    mov     x0, 0x80
+    mov     x0, 0x8000000000000000
+    add     x0, x0, 0x80
     ret
 
 ; -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -1078,7 +1103,8 @@ dec64_is_false;(boolean: dec64) returns notation: dec64
 
 ; If the boolean is false, the result is true. Otherwise the result is false.
 
-    mov     x4, 0x280               ; x4 is false
+    mov     x4, 0x8000000000000000  ; the most significant bit
+    add     x4, x4, 0x280           ; x4 is false
     add     x5, x4, 0x100           ; x5 is true
     subs    xzr, x0, x4
     csel    x0, x4, x5, ne
@@ -1159,7 +1185,8 @@ less_hard
     b.eq    return_true
     cneg    x4, x4, mi              ; x4 is abs(first coefficient)
     cneg    x6, x6, mi              ; x6 is abs(second coefficient)
-    mov     x0, 0x280               ; x0 is false
+    mov     x0, 0x8000000000000000
+    add     x0, x0, 0x280           ; x0 is false
     lsr     x8, x1, 63              ; x8 is 1 if numbers are negative
     eor     x0, x0, x8, lsl 8       ; flip x0 if the inputs are negative
 
@@ -1203,7 +1230,8 @@ dec64_is_nan;(number: dec64) returns comparison: dec64
     and     x5, x0, 0xFF
     subs    xzr, x5, 0x80
     cset    x5, eq
-    mov     x0, 0x280               ; x0 is false
+    mov     x0, 0x8000000000000000
+    add     x0, x0, 0x280           ; x0 is false
     add     x0, x0, x5, lsl 8
     ret
 
@@ -1216,7 +1244,8 @@ dec64_is_zero;(number: dec64) returns comparison: dec64
     and     x5, x0, 0xFF
     subs    xzr, x5, 0x80
     csel    x4, xzr, x4, eq
-    mov     x0, 0x280               ; x0 is false
+    mov     x0, 0x8000000000000000
+    add     x0, x0, 0x280           ; x0 is false
     add     x0, x0, x4, lsl 8
     ret
 
@@ -1224,14 +1253,16 @@ dec64_is_zero;(number: dec64) returns comparison: dec64
 
 return_false
 
-    mov     x0, 0x280               ; x0 is false
+    mov     x0, 0x8000000000000000
+    add     x0, x0, 0x280           ; x0 is false
     ret
 
 ; -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 return_true
 
-    mov     x0, 0x380               ; x0 is true
+    mov     x0, 0x8000000000000000
+    add     x0, x0, 0x380           ; x0 is true
     ret
 
     end
